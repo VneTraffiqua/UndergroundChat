@@ -20,7 +20,7 @@ if __name__ == '__main__':
     env.read_env()
 
     HOST = env.str('HOST')
-    PORT = env.str('PORT')
+    PORT = env.str('CHAT_PORT')
     FILE_PATH = env.str('FILE_PATH')
 
     parser = argparse.ArgumentParser(
@@ -29,9 +29,9 @@ if __name__ == '__main__':
         add_help=True
     )
 
-    parser.add_argument('-ht', '--host', type=str, default='minechat.dvmn.org', help='Connection host used')
-    parser.add_argument('-pt', '--port', type=int, default=5000, help='Connection port used')
-    parser.add_argument('-p', '--path', type=str, default='./', help='Path to the saved chat history')
+    parser.add_argument('-ht', '--host', type=str, default=HOST, help='Connection host used')
+    parser.add_argument('-pt', '--port', type=int, default=PORT, help='Connection port used')
+    parser.add_argument('-p', '--path', type=str, default=FILE_PATH, help='Path to the saved chat history')
     args = parser.parse_args()
 
-    asyncio.run(main(HOST, PORT, FILE_PATH))
+    asyncio.run(main(host=args.host, port=args.port, file_path=args.path))
