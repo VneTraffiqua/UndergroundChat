@@ -3,13 +3,17 @@ import argparse
 import logging
 import aiofiles
 import json
-from environs import Env
+from environs import Env, EnvError
 
 logging.basicConfig(
     format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
     level=logging.INFO,
-    filename=u'underground_chat_log.log'
+    filename='underground_chat_log.log'
 )
+
+async def submit_message(writer, message):
+    writer.write(f'{message}\n\n'.encode())
+    logging.info(msg=f'Sent message: "{message}"')
 
 async def registration(host, port, nickname):
     reader, writer = await asyncio.open_connection(host=host, port=port)
@@ -19,13 +23,13 @@ async def registration(host, port, nickname):
     writer.write(f'{nickname}\n'.encode())
     data = await reader.readline()
     response = json.loads(data.decode())
-    async with aiofiles.open(file='account_hash.txt', mode='w') as file:
-        await file.write(response['account_hash'])
-        logging.info(msg=f'create hash - {response["account_hash"]}')
+    async with aiofiles.open(file='.env', mode='a') as file:
+        await file.write(f'\nTOKEN={response["account_hash"]}')
+        logging.info(msg=f'create account hash - {response["account_hash"]} in .env file')
     writer.close()
     await writer.wait_closed()
 
-async def main(host, port, token, message):
+async def authorise(host, port, token, message):
     reader, writer = await asyncio.open_connection(host=host, port=port)
     data = await reader.readline()
     logging.info(msg=f'{data.decode()}')
@@ -34,8 +38,8 @@ async def main(host, port, token, message):
     response = json.loads(data.decode())
     if response:
         logging.info(msg=f'{data.decode()}')
-        writer.write(f'{message}\n\n'.encode())
-        logging.info(msg=f'Sent message: "{message}"')
+        await submit_message(writer, message)
+
     else:
         logging.critical(msg=f'{token} - неизвестный токен. Проверьте его или зарегистрируйте заново.')
     await writer.drain()
@@ -62,6 +66,7 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--token', type=str, default=TOKEN, help='Your personal hash')
 
     args = parser.parse_args()
-
-    # asyncio.run(main(host=args.host, port=args.port, token=args.token, message=args.your_message))
-    asyncio.run(registration(host=args.host, port=args.port, nickname='akooola'))
+    if TOKEN:
+        asyncio.run(authorise(host=args.host, port=args.port, token=args.token, message=args.your_message))
+    else:
+        asyncio.run(registration(host=args.host, port=args.port, nickname='akooola'))
