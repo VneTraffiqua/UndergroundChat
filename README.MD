@@ -9,7 +9,7 @@ There are 3 variables available:
 - `HOST` - Connection host used to connect.
 - `CHAT_PORT` — Connection port used to connect `reader.py`.
 -  `FILE_PATH` - Saved chat history file.
-- `WRITER_PORT` - Connection host used to connect `writer.py`.
+- `WRITER_PORT` - Connection port used to connect `writer.py`.
 - `TOKEN` - Your personal account hash
 
 ## Launch
