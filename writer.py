@@ -12,6 +12,7 @@ logging.basicConfig(
 )
 
 async def submit_message(writer, message):
+    message = message.replace('\n', '').strip()
     writer.write(f'{message}\n\n'.encode())
     logging.info(msg=f'Sent message: "{message}"')
 
@@ -20,6 +21,7 @@ async def registration(host, port, nickname):
     await reader.readline()
     writer.write('\n'.encode())
     await reader.readline()
+    nickname = nickname.replace('\n', '').strip()
     writer.write(f'{nickname}\n'.encode())
     data = await reader.readline()
     response = json.loads(data.decode())
