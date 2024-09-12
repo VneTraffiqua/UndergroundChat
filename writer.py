@@ -1,6 +1,7 @@
 import asyncio
 import argparse
 import logging
+import aiofiles
 import json
 from environs import Env
 
@@ -9,6 +10,20 @@ logging.basicConfig(
     level=logging.INFO,
     filename=u'underground_chat_log.log'
 )
+
+async def registration(host, port, nickname):
+    reader, writer = await asyncio.open_connection(host=host, port=port)
+    await reader.readline()
+    writer.write('\n'.encode())
+    await reader.readline()
+    writer.write(f'{nickname}\n'.encode())
+    data = await reader.readline()
+    response = json.loads(data.decode())
+    async with aiofiles.open(file='account_hash.txt', mode='w') as file:
+        await file.write(response['account_hash'])
+        logging.info(msg=f'create hash - {response["account_hash"]}')
+    writer.close()
+    await writer.wait_closed()
 
 async def main(host, port, token, message):
     reader, writer = await asyncio.open_connection(host=host, port=port)
@@ -48,4 +63,5 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    asyncio.run(main(host=args.host, port=args.port, token=args.token, message=args.your_message))
+    # asyncio.run(main(host=args.host, port=args.port, token=args.token, message=args.your_message))
+    asyncio.run(registration(host=args.host, port=args.port, nickname='akooola'))
