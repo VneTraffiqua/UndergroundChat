@@ -1,6 +1,7 @@
 import asyncio
 import argparse
 import logging
+import json
 from environs import Env
 
 logging.basicConfig(
@@ -11,12 +12,17 @@ logging.basicConfig(
 
 async def main(host, port, token, message):
     reader, writer = await asyncio.open_connection(host=host, port=port)
-    sent_messages = [token, message]
-    for message in sent_messages:
-        data = await reader.readline()
+    data = await reader.readline()
+    logging.info(msg=f'{data.decode()}')
+    writer.write(f'{token}\n'.encode())
+    data = await reader.readline()
+    response = json.loads(data.decode())
+    if response:
         logging.info(msg=f'{data.decode()}')
         writer.write(f'{message}\n\n'.encode())
-        logging.info(msg=f'Sent: {message}')
+        logging.info(msg=f'Sent message: "{message}"')
+    else:
+        logging.critical(msg=f'{token} - неизвестный токен. Проверьте его или зарегистрируйте заново.')
     await writer.drain()
     logging.info(msg=f'Close the connection')
     writer.close()
