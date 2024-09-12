@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     parser.add_argument('-ht', '--host', type=str, default=HOST, help='Connection host used')
     parser.add_argument('-pt', '--port', type=int, default=PORT, help='Connection port used')
-    parser.add_argument('-p', '--path', type=str, default=FILE_PATH, help='Path to the saved chat history')
+    parser.add_argument('-p', '--path', type=str, default=FILE_PATH, help='Path to the file saved chat history')
     args = parser.parse_args()
 
     asyncio.run(main(host=args.host, port=args.port, file_path=args.path))
