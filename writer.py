@@ -1,15 +1,24 @@
 import asyncio
 import argparse
+import logging
 from environs import Env
+
+logging.basicConfig(
+    format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
+    level=logging.INFO,
+    filename=u'underground_chat_log.log'
+)
 
 async def main(host, port, token, message):
     reader, writer = await asyncio.open_connection(host=host, port=port)
-    data = await reader.readline()
-    print(f'Received: {data.decode()}')
-    writer.write(f'{token}\n'.encode())
-    writer.write(f'{message}\n\n'.encode())
+    sent_messages = [token, message]
+    for message in sent_messages:
+        data = await reader.readline()
+        logging.info(msg=f'{data.decode()}')
+        writer.write(f'{message}\n\n'.encode())
+        logging.info(msg=f'Sent: {message}')
     await writer.drain()
-    print('Close the connection')
+    logging.info(msg=f'Close the connection')
     writer.close()
     await writer.wait_closed()
 
