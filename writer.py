@@ -24,6 +24,7 @@ async def connection_manager(host, port):
 async def submit_message(writer, message):
     message = message.replace('\n', '').strip()
     writer.write(f'{message}\n\n'.encode())
+    await  writer.drain()
     logging.info(msg=f'Sent message: "{message}"')
 
 async def registration(host, port, nickname):
@@ -33,6 +34,7 @@ async def registration(host, port, nickname):
         await reader.readline()
         nickname = nickname.replace('\n', '').strip()
         writer.write(f'{nickname}\n'.encode())
+        await  writer.drain()
         data = await reader.readline()
         response = json.loads(data.decode())
         async with aiofiles.open(file='.env', mode='a') as file:
@@ -46,6 +48,7 @@ async def authorise(host, port, token, message):
         data = await reader.readline()
         logging.info(msg=f'{data.decode()}')
         writer.write(f'{token}\n'.encode())
+        await  writer.drain()
         data = await reader.readline()
         response = json.loads(data.decode())
         if response:
