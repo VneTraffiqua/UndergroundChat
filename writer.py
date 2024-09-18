@@ -4,7 +4,8 @@ import logging
 import aiofiles
 import json
 from environs import Env
-from contextlib import asynccontextmanager
+from connection_utils import manage_connection
+
 
 logging.basicConfig(
     format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
@@ -12,14 +13,6 @@ logging.basicConfig(
     filename='underground_chat_log.log'
 )
 
-@asynccontextmanager
-async def connection_manager(host, port):
-    reader, writer = await asyncio.open_connection(host=host, port=port)
-    try:
-        yield reader, writer
-    finally:
-        writer.close()
-        await writer.wait_closed()
 
 async def submit_message(writer, message):
     message = message.replace('\n', '').strip()
@@ -28,7 +21,7 @@ async def submit_message(writer, message):
     logging.info(msg=f'Sent message: "{message}"')
 
 async def registration(host, port, nickname):
-    async with connection_manager(host, port) as (reader, writer):
+    async with manage_connection(host, port) as (reader, writer):
         await reader.readline()
         writer.write('\n'.encode())
         await reader.readline()
@@ -44,7 +37,7 @@ async def registration(host, port, nickname):
         await writer.wait_closed()
 
 async def authorise(host, port, token, message):
-    async with connection_manager(host, port) as (reader, writer):
+    async with manage_connection(host, port) as (reader, writer):
         data = await reader.readline()
         logging.info(msg=f'{data.decode()}')
         writer.write(f'{token}\n'.encode())

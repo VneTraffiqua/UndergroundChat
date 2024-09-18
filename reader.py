@@ -2,21 +2,12 @@ import asyncio
 import aiofiles
 import datetime
 import argparse
-from contextlib import asynccontextmanager
+from connection_utils import manage_connection
 from environs import Env
 
 
-@asynccontextmanager
-async def connection_manager(host, port):
-    reader, writer = await asyncio.open_connection(host=host, port=port)
-    try:
-        yield reader, writer
-    finally:
-        writer.close()
-        await writer.wait_closed()
-
 async def main(host, port, file_path):
-    async with connection_manager(host, port) as (reader, writer):
+    async with manage_connection(host, port) as (reader, writer):
         while True:
             line = await reader.readline()
             chat_with_time = datetime.datetime.now().strftime('%Y-%m-%d | %H.%M.%S || ') + line.decode("utf-8")
